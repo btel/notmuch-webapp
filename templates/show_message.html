@@ -1,0 +1,17 @@
+<h1> {{ subject }} </h1> 
+
+{% if html_content %}
+{{ html_content }}
+{% elif text_content %}
+<pre>
+{{ text_content }}
+</pre>
+{% endif %}
+
+Attachments:
+<ul>
+{% for part in parts %}
+<li> {{ part.get_filename() }}
+(<a href="{{ msg_id }}/{{ loop.index0 }}"> {{ part.get_content_type() }} </a>) 
+{% endfor %}
+</ul>

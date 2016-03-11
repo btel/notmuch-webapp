@@ -1,0 +1,9 @@
+<!doctype html>
+<title>Your messages</title>
+
+{% include "search_form.html" %}
+
+<h1> {{ query }} </h1>
+{% for m in messages %}
+<a href="/message/{{ m.get_message_id() }}" > {{ m.get_header('from') }} &mdash; {{ m.get_header('subject') }} </a><br \>
+{% endfor %}
