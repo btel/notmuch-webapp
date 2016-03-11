@@ -33,7 +33,9 @@ def list_messages_by_tag(tag='inbox'):
 def search_type(messages, content_type):
     for part in messages:
         if part.get_content_type() == content_type:
-            return part.get_payload(decode=True)
+            payload = part.get_payload(decode=True)
+            encoding = part.get_content_charset()
+            return payload.decode(encoding)
 
 @app.route('/message/<msg_id>')
 def get_message(msg_id):
@@ -42,10 +44,8 @@ def get_message(msg_id):
     message_parts = message.get_message_parts()
     html_msg = search_type(message_parts, 'text/html')
     if html_msg:
-        html_msg = Markup(html_msg.decode('utf-8'))
+        html_msg = Markup(html_msg)
     txt_msg = search_type(message_parts, 'text/plain')
-    if txt_msg:
-        txt_msg = txt_msg.decode('utf-8')
     return render_template("show_message.html", 
             msg_id=msg_id,
             subject=subject,
