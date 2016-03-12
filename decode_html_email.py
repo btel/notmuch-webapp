@@ -60,11 +60,12 @@ def get_message_part(msg_id, part):
     part = message_parts[part]
     payload = part.get_payload(decode=True)
     content_type = part.get_content_type()
-    return payload, 200, {'Content-Type' : content_type}
+    headers = {'Content-Type' : content_type}
+    fname = part.get_filename()
+    if fname:
+        headers['Content-Disposition'] = 'inline; filename="{}"'.format(fname)
+    return payload, 200, headers 
     
-
-
-#msg_parts = m.get_message_parts()
 if __name__ == "__main__":
     app.run(debug=True)
 
