@@ -7,7 +7,6 @@ import notmuch as nm
 import sys
 
 app = Flask(__name__)
-db = nm.Database()
 
 @app.route('/search')
 def search_messages():
@@ -19,11 +18,13 @@ def list_search_results():
     return list_messages(querystr)
 
 def list_messages(querystr):
-    q = nm.Query(db, querystr)
-    msgs = q.search_messages()
-    return render_template('msg_list.html',
-                           messages=msgs,
-                           query=querystr) 
+    with  nm.Database() as db:
+        q = nm.Query(db, querystr)
+        msgs = q.search_messages()
+        response_html = render_template('msg_list.html',
+                               messages=msgs,
+                               query=querystr) 
+    return response_html
 
 @app.route('/')
 @app.route('/tag/<tag>')
@@ -39,13 +40,15 @@ def search_type(messages, content_type):
 
 @app.route('/message/<msg_id>')
 def get_message(msg_id):
-    message = db.find_message(msg_id)
-    subject = message.get_header('subject')
-    message_parts = message.get_message_parts()
-    html_msg = search_type(message_parts, 'text/html')
+    with nm.Database() as db:
+        message = db.find_message(msg_id)
+        subject = message.get_header('subject')
+        message_parts = message.get_message_parts()
+        html_msg = search_type(message_parts, 'text/html')
+        txt_msg = search_type(message_parts, 'text/plain')
+
     if html_msg:
         html_msg = Markup(html_msg)
-    txt_msg = search_type(message_parts, 'text/plain')
     return render_template("show_message.html", 
             msg_id=msg_id,
             subject=subject,
@@ -55,9 +58,10 @@ def get_message(msg_id):
 
 @app.route('/message/<msg_id>/<int:part>')
 def get_message_part(msg_id, part):
-    message = db.find_message(msg_id)
-    message_parts = message.get_message_parts()
-    part = message_parts[part]
+    with nm.Database() as db:
+        message = db.find_message(msg_id)
+        message_parts = message.get_message_parts()
+        part = message_parts[part]
     payload = part.get_payload(decode=True)
     content_type = part.get_content_type()
     headers = {'Content-Type' : content_type}
