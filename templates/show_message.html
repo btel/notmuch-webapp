@@ -9,6 +9,9 @@
     border-style: solid;
     margin-bottom: 20px;
 }
+th {
+    text-align: left;
+}
 #plain-text-msg {
 white-space: pre-wrap;
 max-width: 80ch; 
@@ -21,13 +24,13 @@ font-family: monospace;
   
 <h1> {{ subject }} </h1> 
 
-<div id="header">
-<strong>Date</strong>: {{ date }} <br/>
-<strong>From</strong>: {{  from_addr }} </br>
-<strong>To</strong>: {{ to }} <br/>
-<strong>Cc</strong>: {{ cc_addr }} <br/>
-<strong>Tags</strong>: {{ tags }} <br/>
-</div>
+<table id="header">
+    <tr><th>Date:</th> <td>{{ date }}<td></tr>
+    <tr><th>From:</th> <td>{{ from_addr }}<td></tr>
+    <tr><th>To:</th> <td>{{ to }}<td></tr>
+    <tr><th>CC:</th> <td>{{ cc_addr }}<td></tr>
+    <tr><th>Tags:</th> <td>{{ tags }}<td></tr>
+</table>
 
 
 {% if html_content %}

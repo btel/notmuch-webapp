@@ -5,6 +5,7 @@ from flask import Flask, request, Markup
 from flask import render_template
 import notmuch as nm
 import sys
+from bs4 import BeautifulSoup
 
 app = Flask(__name__)
 
@@ -43,13 +44,25 @@ def get_message(msg_id):
     with nm.Database() as db:
         message = db.find_message(msg_id)
         subject = message.get_header('subject')
+        from_addr = message.get_header('from')
+        to_addr = message.get_header('to')
+        cc_addr = message.get_header('cc')
+        date = message.get_header('date')
+        tags = message.get_tags()
         message_parts = message.get_message_parts()
         html_msg = search_type(message_parts, 'text/html')
         txt_msg = search_type(message_parts, 'text/plain')
 
     if html_msg:
+        parsed_html = BeautifulSoup(html_msg)
+        html_msg = parsed_html.body.renderContents().decode('utf-8')
         html_msg = Markup(html_msg)
     return render_template("show_message.html", 
+            from_addr=from_addr,
+            to=to_addr,
+            date=date,
+            cc_addr=cc_addr,
+            tags=tags,
             msg_id=msg_id,
             subject=subject,
             text_content=txt_msg,
