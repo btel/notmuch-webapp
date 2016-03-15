@@ -6,8 +6,16 @@ from flask import render_template
 import notmuch as nm
 import sys
 from bs4 import BeautifulSoup
+import re
 
 app = Flask(__name__)
+
+@app.template_filter('removecitations')
+def removecitations(s):
+    lines = [line for line in s.splitlines() if not re.match("^>", line)]
+    return "\n".join(lines)
+
+
 
 @app.route('/search')
 def search_messages():
@@ -39,35 +47,58 @@ def search_type(messages, content_type):
             encoding = part.get_content_charset()
             return payload.decode(encoding)
 
-@app.route('/message/<msg_id>')
-def get_message(msg_id):
+@app.route('/thread/<thread_id>')
+def list_thread(thread_id):
+    querystr = "thread:{}".format(thread_id)
     with nm.Database() as db:
-        message = db.find_message(msg_id)
-        subject = message.get_header('subject')
-        from_addr = message.get_header('from')
-        to_addr = message.get_header('to')
-        cc_addr = message.get_header('cc')
-        date = message.get_header('date')
-        tags = message.get_tags()
-        message_parts = message.get_message_parts()
-        html_msg = search_type(message_parts, 'text/html')
-        txt_msg = search_type(message_parts, 'text/plain')
+        q = nm.Query(db, querystr)
+        msgs = q.search_messages()
+        parsed_messages = map(parse_message, msgs)
+
+    return render_template('show_thread.html',
+            thread_subject = parsed_messages[-1]['subject'],
+            message_list=parsed_messages[::-1])
+
+def parse_message(message):
+    subject = message.get_header('subject')
+    from_addr = message.get_header('from')
+    to_addr = message.get_header('to')
+    cc_addr = message.get_header('cc')
+    date = message.get_header('date')
+    tags = message.get_tags()
+    message_parts = message.get_message_parts()
+    html_msg = search_type(message_parts, 'text/html')
+    txt_msg = search_type(message_parts, 'text/plain')
+    msg_id = message.get_message_id() 
+    thread_id = message.get_thread_id()
 
     if html_msg:
         parsed_html = BeautifulSoup(html_msg)
         html_msg = parsed_html.body.renderContents().decode('utf-8')
         html_msg = Markup(html_msg)
+    message_dict = {
+            'id' : msg_id, 
+            'thread_id' : thread_id,
+            'subject' : subject,
+            'from' : from_addr,
+            'to' : to_addr,
+            'cc' : cc_addr,
+            'date' : date,
+            'tags' : tags,
+            'html' : html_msg,
+            'plaintext' : txt_msg,
+            'parts' : message_parts
+            }
+    return message_dict
+
+@app.route('/message/<msg_id>')
+def get_message(msg_id):
+    with nm.Database() as db:
+        message = db.find_message(msg_id)
+        message_dict = parse_message(message)
+
     return render_template("show_message.html", 
-            from_addr=from_addr,
-            to=to_addr,
-            date=date,
-            cc_addr=cc_addr,
-            tags=tags,
-            msg_id=msg_id,
-            subject=subject,
-            text_content=txt_msg,
-            html_content=html_msg,
-            parts=message_parts)
+            message=message_dict)
 
 @app.route('/message/<msg_id>/<int:part>')
 def get_message_part(msg_id, part):

@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>title</title>
+    <title> {{ message.subject }} </title>
   <style type="text/css">
 #header {
     border-width: 1px 0px 1px 0px;
@@ -22,22 +22,23 @@ font-family: monospace;
   </head>
   <body>
   
-<h1> {{ subject }} </h1> 
+<h1> {{ message.subject }} </h1> 
+<a href="/thread/{{ message.thread_id }}#{{ message.id }}">Thread</a>
 
 <table id="header">
-    <tr><th>Date:</th> <td>{{ date }}<td></tr>
-    <tr><th>From:</th> <td>{{ from_addr }}<td></tr>
-    <tr><th>To:</th> <td>{{ to }}<td></tr>
-    <tr><th>CC:</th> <td>{{ cc_addr }}<td></tr>
-    <tr><th>Tags:</th> <td>{{ tags }}<td></tr>
+    <tr><th>Date:</th> <td>{{ message.date }}<td></tr>
+    <tr><th>From:</th> <td>{{ message.from }}<td></tr>
+    <tr><th>To:</th> <td>{{ message.to }}<td></tr>
+    <tr><th>CC:</th> <td>{{ message.cc }}<td></tr>
+    <tr><th>Tags:</th> <td>{{ message.tags }}<td></tr>
 </table>
 
 
-{% if html_content %}
-{{ html_content }}
-{% elif text_content %}
+{% if message.html %}
+{{ message.html }}
+{% elif message.plaintext %}
 <p id="plain-text-msg" >
-{{ text_content }}
+{{ message.plaintext }}
 </p>
 {% endif %}
 
@@ -47,9 +48,9 @@ Attachments:
 </strong>
 </p>
 <ul>
-{% for part in parts %}
+{% for part in message.parts %}
 <li> {{ part.get_filename() }}
-(<a href="{{ msg_id }}/{{ loop.index0 }}"> {{ part.get_content_type() }} </a>) 
+(<a href="{{ message.id }}/{{ loop.index0 }}"> {{ part.get_content_type() }} </a>) 
 {% endfor %}
 </ul>
   </body>

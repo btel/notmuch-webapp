@@ -1,0 +1,14 @@
+#header {
+    border-width: 1px 0px 1px 0px;
+    border-style: solid;
+    margin-bottom: 20px;
+}
+th {
+    text-align: left;
+}
+.plain-text-msg {
+white-space: pre-wrap;
+max-width: 80ch; 
+font-family: monospace;
+}
+   
