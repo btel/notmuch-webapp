@@ -1,11 +1,41 @@
+ <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>title</title>
+  <style type="text/css">
+#header {
+    border-width: 1px 0px 1px 0px;
+    border-style: solid;
+    margin-bottom: 20px;
+}
+#plain-text-msg {
+white-space: pre-wrap;
+max-width: 80ch; 
+font-family: monospace;
+}
+   
+  </style>
+  </head>
+  <body>
+  
 <h1> {{ subject }} </h1> 
+
+<div id="header">
+<strong>Date</strong>: {{ date }} <br/>
+<strong>From</strong>: {{  from_addr }} </br>
+<strong>To</strong>: {{ to }} <br/>
+<strong>Cc</strong>: {{ cc_addr }} <br/>
+<strong>Tags</strong>: {{ tags }} <br/>
+</div>
+
 
 {% if html_content %}
 {{ html_content }}
 {% elif text_content %}
-<pre>
+<p id="plain-text-msg" >
 {{ text_content }}
-</pre>
+</p>
 {% endif %}
 
 <p>
@@ -19,3 +49,5 @@ Attachments:
 (<a href="{{ msg_id }}/{{ loop.index0 }}"> {{ part.get_content_type() }} </a>) 
 {% endfor %}
 </ul>
+  </body>
+</html>
