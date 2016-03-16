@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 #coding=utf-8
 
-from flask import Flask, request, Markup
+from flask import Flask, request, Markup, escape
 from flask import render_template
 import notmuch as nm
 import sys
 from bs4 import BeautifulSoup
 import re
+import dateutil.parser
 
 app = Flask(__name__)
 
@@ -15,8 +16,38 @@ def removecitations(s):
     lines = [line for line in s.splitlines() if not re.match("^>", line)]
     return "\n".join(lines)
 
+@app.template_filter('dateformat')
+def dateformat(s, fmt="%d/%m/%y"):
+    d = dateutil.parser.parse(s)
+    return d.strftime(fmt)
 
+@app.template_filter('plaintohtml')
+def plaintohtml(s):
+    return Markup("\n".join(tokenize_offside(s.splitlines())))
 
+def tokenize_offside(lines):
+    def _calc_depth(l):
+        stripped = l.lstrip('>')
+        depth = len(l) - len(stripped)
+        return depth, stripped.lstrip(" ")
+    level = 0
+    for l in lines:
+        depth, stripped = _calc_depth(l)
+        if depth > level:
+            for n in range(depth - level):
+                yield '<blockquote type="cite">'
+        elif depth < level:
+            for n in range(level - depth):
+                yield "</blockquote>"
+
+        level = depth
+        if not stripped:
+            continue
+        else:
+            yield escape(stripped)
+    for n in range(level):
+        yield "</blockquote>"
+    
 @app.route('/search')
 def search_messages():
     return render_template('search_form.html')

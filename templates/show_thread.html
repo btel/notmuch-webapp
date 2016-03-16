@@ -8,17 +8,23 @@
   <body>
   <h1> {{ thread_subject }} </h1>
 
+  <ul>
+      {% for message in message_list %}
+      <li> <a href="#{{ message.id }}" >{{ message.date }} — {{ message.from}}</a> </li>
+      {% endfor %}
+  </ul>
+
   {% for message in message_list %}
-  <p> <strong>From:</strong> {{ message.from }} <br/>
-      <strong>Date:</strong> {{ message.date}} </p>
+  <p> <strong>{{ message.date | dateformat}} — {{ message.from }}</strong> <br/>
+       </p>
 
       <div id="{{ message.id }}">
     {% if message.html %}
     {{ message.html }}
     {% elif message.plaintext %}
-    <p class="plain-text-msg" >
-        {{ message.plaintext | removecitations }}
-    </p>
+    <div class="plain-text-msg" >
+        {{ message.plaintext | plaintohtml }}
+    </div>
     {% endif %}
   {% endfor %}
   </div>

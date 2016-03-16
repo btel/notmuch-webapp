@@ -12,7 +12,7 @@
 th {
     text-align: left;
 }
-#plain-text-msg {
+.plain-text-msg {
 white-space: pre-wrap;
 max-width: 80ch; 
 font-family: monospace;
@@ -37,9 +37,9 @@ font-family: monospace;
 {% if message.html %}
 {{ message.html }}
 {% elif message.plaintext %}
-<p id="plain-text-msg" >
-{{ message.plaintext }}
-</p>
+<div class="plain-text-msg" >
+{{ message.plaintext | plaintohtml }}
+</div>
 {% endif %}
 
 <p>
