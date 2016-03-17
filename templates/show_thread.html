@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <title>{{ thread_title }} </title>
     <link rel='stylesheet' href="{{ url_for('static', filename='style.css') }}" type="text/css">
+    <style type="text/css">
+    .folded {
+        display: none;
+    }
+    </style>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
   </head>
   <body>
   <h1> {{ thread_subject }} </h1>
@@ -15,20 +21,26 @@
   </ul>
 
   {% for message in message_list %}
-  <p> <strong>{{ message.date | dateformat}} — {{ message.from }}</strong> <br/>
+  <div class="message" id="{{ message.id }}">
+  <p class="msg-header"> <strong>{{ message.date | dateformat}} — {{ message.from }}</strong> <br/>
        </p>
-
-      <div id="{{ message.id }}">
     {% if message.html %}
+    <div class="body html-msg folded">
     {{ message.html }}
+    </div>
     {% elif message.plaintext %}
-    <div class="plain-text-msg" >
+    <div class="body plain-text-msg folded" >
         {{ message.plaintext | plaintohtml }}
     </div>
     {% endif %}
-  {% endfor %}
   </div>
+  {% endfor %}
 
+<script>
+$( "div.message" ).click(function() {
+  $( this ).find(".body").toggleClass( "folded" );
+});
+</script>
   
   </body>
 </html>

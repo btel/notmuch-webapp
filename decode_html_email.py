@@ -67,6 +67,17 @@ def list_messages(querystr):
     return response_html
 
 @app.route('/')
+def list_tags():
+    with nm.Database() as db:
+        tags = list(db.get_all_tags())
+        counts = []
+        for tag in tags:
+            q = nm.Query(db, "tag:{} and tag:unread".format(tag))
+            counts.append(q.count_messages())
+    return render_template('list_tags.html',
+            tag_counts=zip(tags, counts))
+
+
 @app.route('/tag/<tag>')
 def list_messages_by_tag(tag='inbox'):
     return list_messages("tag:{}".format(tag))
