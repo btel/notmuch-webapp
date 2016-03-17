@@ -8,6 +8,7 @@ import sys
 from bs4 import BeautifulSoup
 import re
 import dateutil.parser
+import json
 
 app = Flask(__name__)
 
@@ -141,6 +142,21 @@ def get_message(msg_id):
 
     return render_template("show_message.html", 
             message=message_dict)
+
+@app.route('/message/<msg_id>', methods=["PATCH"])
+def set_message_tags(msg_id):
+    print(request.data)
+    remove_tags = request.json['tags']['remove']
+    add_tags = request.json['tags']['add']
+    with nm.Database(mode=nm.Database.MODE.READ_WRITE) as db:
+        message = db.find_message(msg_id)
+        for tag in remove_tags:
+            message.remove_tag(tag)
+        for tag in add_tags:
+            message.add_tag(tag)
+    
+    return "OK"
+
 
 @app.route('/message/<msg_id>/<int:part>')
 def get_message_part(msg_id, part):

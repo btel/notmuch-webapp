@@ -1,0 +1,15 @@
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title> Tags </title>
+  </head>
+  <body>
+
+{% include "search_form.html" %}
+
+{% for tag, count in tag_counts %}
+<a href="/tag/{{ tag }}"> {{ tag }} </a> ({{ count }}) <br/>
+{% endfor %}
+  
+  </body>
+</html>

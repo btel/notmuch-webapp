@@ -19,12 +19,13 @@ font-family: monospace;
 }
    
   </style>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
   </head>
   <body>
   
 <h1> {{ message.subject }} </h1> 
+<button id="archive-button" type="button">Archive</button> 
 <a href="/thread/{{ message.thread_id }}#{{ message.id }}">Thread</a>
-
 <table id="header">
     <tr><th>Date:</th> <td>{{ message.date }}<td></tr>
     <tr><th>From:</th> <td>{{ message.from }}<td></tr>
@@ -53,5 +54,19 @@ Attachments:
 (<a href="{{ message.id }}/{{ loop.index0 }}"> {{ part.get_content_type() }} </a>) 
 {% endfor %}
 </ul>
+
+<script>
+$( "#archive-button" ).click(function() {
+
+    $.ajax({
+        type: "PATCH",
+        url: "/message/{{ message.id }}",
+        data: '{"tags":{"remove" : ["inbox", "unread"], "add" : []}}',
+        contentType: "application/json",
+        success: function(msg){
+        }
+    });
+});
+</script>
   </body>
 </html>
