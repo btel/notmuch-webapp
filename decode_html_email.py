@@ -96,6 +96,7 @@ def list_thread(thread_id):
         parsed_messages = map(parse_message, msgs)
 
     return render_template('show_thread.html',
+            threadid = thread_id,
             thread_subject = parsed_messages[-1]['subject'],
             message_list=parsed_messages[::-1])
 
@@ -142,7 +143,6 @@ def get_message(msg_id):
 
 @app.route('/message/<msg_id>', methods=["PATCH"])
 def set_message_tags(msg_id):
-    print(request.data)
     remove_tags = request.json['tags']['remove']
     add_tags = request.json['tags']['add']
     with nm.Database(mode=nm.Database.MODE.READ_WRITE) as db:
@@ -152,6 +152,24 @@ def set_message_tags(msg_id):
         for tag in add_tags:
             message.add_tag(tag)
     
+    return "OK"
+
+@app.route('/thread/<thread_id>', methods=['PATCH'])
+def set_thread_tags(thread_id):
+    querystr = "thread:{}".format(thread_id)
+    remove_tags = request.json['tags']['remove']
+    add_tags = request.json['tags']['add']
+
+    with nm.Database(mode=nm.Database.MODE.READ_WRITE) as db:
+        q = nm.Query(db, querystr)
+        msgs = q.search_messages()
+
+        for message in msgs:
+            for tag in remove_tags:
+                message.remove_tag(tag)
+            for tag in add_tags:
+                message.add_tag(tag)
+
     return "OK"
 
 

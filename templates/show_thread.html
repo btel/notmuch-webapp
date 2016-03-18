@@ -12,13 +12,10 @@
     <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
   </head>
   <body>
-  <h1> {{ thread_subject }} </h1>
+  <h1> {{ thread_subject }}
+  <button id="archive-thread-button" type="button">Archive</button> 
+  </h1>
 
-  <ul>
-      {% for message in message_list %}
-      <li> <a href="#{{ message.id|urlencode }}" >{{ message.date }} — {{ message.from}}</a> </li>
-      {% endfor %}
-  </ul>
 
   {% for message in message_list %}
   <div class="message" id="{{ message.id|urlencode}}">
@@ -58,6 +55,19 @@ function jq( myid ) {
                 console.log(hash);
                 $(jq(hash)).find(".body").removeClass("folded");
             });
+
+//archive thread
+
+$( "#archive-thread-button" ).click(function() {
+    $.ajax({
+        type: "PATCH",
+        url: "/thread/{{ threadid }}",
+        data: '{"tags":{"remove" : ["inbox", "unread"], "add" : []}}',
+        contentType: "application/json",
+        success: function(msg){
+        }
+    });
+});
 
 </script>
   
