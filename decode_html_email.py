@@ -42,10 +42,7 @@ def tokenize_offside(lines):
                 yield "</blockquote>"
 
         level = depth
-        if not stripped:
-            continue
-        else:
-            yield escape(stripped)
+        yield escape(stripped)
     for n in range(level):
         yield "</blockquote>"
     
@@ -108,7 +105,7 @@ def parse_message(message):
     to_addr = message.get_header('to')
     cc_addr = message.get_header('cc')
     date = message.get_header('date')
-    tags = message.get_tags()
+    tags = list(message.get_tags())
     message_parts = message.get_message_parts()
     html_msg = search_type(message_parts, 'text/html')
     txt_msg = search_type(message_parts, 'text/plain')

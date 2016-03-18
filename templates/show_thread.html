@@ -16,30 +16,49 @@
 
   <ul>
       {% for message in message_list %}
-      <li> <a href="#{{ message.id }}" >{{ message.date }} — {{ message.from}}</a> </li>
+      <li> <a href="#{{ message.id|urlencode }}" >{{ message.date }} — {{ message.from}}</a> </li>
       {% endfor %}
   </ul>
 
   {% for message in message_list %}
-  <div class="message" id="{{ message.id }}">
-  <p class="msg-header"> <strong>{{ message.date | dateformat}} — {{ message.from }}</strong> <br/>
+  <div class="message" id="{{ message.id|urlencode}}">
+      <p class="msg-header"> <strong>{{ message.date | dateformat}} — {{ message.from }}</strong> ({{ message.tags | join(", ") }})<br/>
        </p>
+       {% if 'unread' in message.tags %}
+       <div class="body">
+       {% else %}
+       <div class="body folded" >
+       {% endif %}
     {% if message.html %}
-    <div class="body html-msg folded">
+    <span class="html-msg">
     {{ message.html }}
-    </div>
+</span>
     {% elif message.plaintext %}
-    <div class="body plain-text-msg folded" >
+    <span class="plain-text-msg" >
         {{ message.plaintext | plaintohtml }}
-    </div>
+    </span>
     {% endif %}
+    <p>
+    <a href="/message/{{ message.id }}">Open message</a>
+    </p>
+</div>
   </div>
   {% endfor %}
 
 <script>
-$( "div.message" ).click(function() {
-  $( this ).find(".body").toggleClass( "folded" );
+$( "p.msg-header" ).click(function() {
+  $( this ).parent().find(".body").toggleClass( "folded" );
 });
+function jq( myid ) {
+    return myid.replace(/[!"$%&'()*+,.\/:;<=>?@[\\\]^`{|}~]/g, "\\$&");
+}
+ $(document).ready(function(){
+                //JQuery code for getting current URL
+                var hash = $(location).attr('hash');
+                console.log(hash);
+                $(jq(hash)).find(".body").removeClass("folded");
+            });
+
 </script>
   
   </body>

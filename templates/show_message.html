@@ -25,13 +25,13 @@ font-family: monospace;
   
 <h1> {{ message.subject }} </h1> 
 <button id="archive-button" type="button">Archive</button> 
-<a href="/thread/{{ message.thread_id }}#{{ message.id }}">Thread</a>
+<a href="/thread/{{ message.thread_id }}#{{ message.id|urlencode }}">Thread</a>
 <table id="header">
     <tr><th>Date:</th> <td>{{ message.date }}<td></tr>
     <tr><th>From:</th> <td>{{ message.from }}<td></tr>
     <tr><th>To:</th> <td>{{ message.to }}<td></tr>
     <tr><th>CC:</th> <td>{{ message.cc }}<td></tr>
-    <tr><th>Tags:</th> <td>{{ message.tags }}<td></tr>
+    <tr><th>Tags:</th> <td>{{ message.tags|join(" ") }}<td></tr>
 </table>
 
 
