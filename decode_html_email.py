@@ -85,7 +85,10 @@ def search_type(messages, content_type):
         if part.get_content_type() == content_type:
             payload = part.get_payload(decode=True)
             encoding = part.get_content_charset()
-            return payload.decode(encoding)
+            if encoding:
+                return payload.decode(encoding)
+            else:
+                return payload.decode()
 
 @app.route('/thread/<thread_id>')
 def list_thread(thread_id):
@@ -115,6 +118,12 @@ def parse_message(message):
 
     if html_msg:
         parsed_html = BeautifulSoup(html_msg)
+        cid_tags = parsed_html.find_all(src=re.compile("^cid:"))
+        for cid_tag in cid_tags:
+            src = cid_tag['src']
+            m = re.match("^cid:(.*)", src)
+            contentid = m.groups()[0]
+            cid_tag['src'] = "/message/{msgid}/{cid}".format(msgid=msg_id, cid=contentid)
         html_msg = parsed_html.body.renderContents().decode('utf-8')
         html_msg = Markup(html_msg)
     message_dict = {
@@ -173,20 +182,39 @@ def set_thread_tags(thread_id):
     return "OK"
 
 
-@app.route('/message/<msg_id>/<int:part>')
-def get_message_part(msg_id, part):
+@app.route('/message/<msg_id>/<int:part_idx>')
+@app.route('/message/<msg_id>/<string:cid>')
+def get_message_part(msg_id, part_idx=None, cid=None):
     with nm.Database() as db:
         message = db.find_message(msg_id)
         message_parts = message.get_message_parts()
-        part = message_parts[part]
-    payload = part.get_payload(decode=True)
-    content_type = part.get_content_type()
-    headers = {'Content-Type' : content_type}
-    fname = part.get_filename()
-    if fname:
-        headers['Content-Disposition'] = 'inline; filename="{}"'.format(fname)
-    return payload, 200, headers 
-    
+    if cid is not None:
+        for part in message_parts:
+            try:
+                part_cid = part['Content-ID']
+            except KeyError:
+                part_cid = None
+            if part_cid:
+                part_cid = part_cid.lstrip('<').rstrip('>')
+            else:
+                continue
+            if part_cid == cid:
+                content_type = part.get_content_type()
+                headers = {'Content-Type' : content_type}
+                payload = part.get_payload(decode=True)
+                return payload, 200, headers
+        return "no such file"
+
+    elif part_idx is not None:
+        part = message_parts[part_idx]
+        payload = part.get_payload(decode=True)
+        content_type = part.get_content_type()
+        headers = {'Content-Type' : content_type}
+        fname = part.get_filename()
+        if fname:
+            headers['Content-Disposition'] = 'inline; filename="{}"'.format(fname)
+        return payload, 200, headers 
+
 if __name__ == "__main__":
     app.run(debug=True)
 
